@@ -2,37 +2,67 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
 {
-    public float Speed = 3.0f;
-    private float curSpeed;
-    private float jumpSpeed;
 
-    private CharacterController cc;
-    private Vector2 up;
-    private Vector2 forward;
+    private float curSpeed;
+    private Vector2 movDir;
+    private Rigidbody2D rigidbody;
+    
     public LayerMask groundLayer;
+    public float Speed = 3.0f;
+    public float jumpSpeed;
+
 
     // Use this for initialization
     void Start ()
-	{
-	    cc = GetComponent<CharacterController>();
-        up = transform.TransformDirection(new Vector2(0, 1));
-        forward = transform.TransformDirection(new Vector2(1, 0));
+    {
+        rigidbody = GetComponent<Rigidbody2D>();
     }
 	
 	// Update is called once per frame
 	void Update ()
 	{
-	    curSpeed = Speed * Input.GetAxis("Horizontal");
-        cc.SimpleMove(forward * curSpeed);
-
-
-	    if (Input.GetKeyDown(KeyCode.Space) && cc.isGrounded)
+        
+	    if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
 	    {
-	        
+	        movDir += Vector2.left;
+	        transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
+        }
+	    else
+	    {
+	        movDir = transform.forward;
 	    }
+
+	    if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
+	    {
+	        movDir += Vector2.right;
+	        transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
+        }
+	    else
+	    {
+	        movDir = transform.forward;
+	    }
+
+        
+
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+	    {
+	        rigidbody.AddForce(transform.up * jumpSpeed, ForceMode2D.Impulse );
+	    }
+
 	}
+
+    public bool IsGrounded()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1, groundLayer);
+        
+        if (hit.collider != null)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 }
