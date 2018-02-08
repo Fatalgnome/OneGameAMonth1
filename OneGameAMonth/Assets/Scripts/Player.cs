@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     private float curSpeed;
     private Vector2 movDir;
     private Rigidbody2D rigidbody;
+    private bool isTouching = false;
     
     public LayerMask groundLayer;
     public float Speed = 3.0f;
@@ -19,45 +20,63 @@ public class Player : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody2D>();
     }
-	
-	// Update is called once per frame
-	void Update ()
-	{
-        
-	    if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
-	    {
-	        movDir += Vector2.left;
-	        transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
-        }
-	    else
-	    {
-	        movDir = transform.forward;
-	    }
 
-	    if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
-	    {
-	        movDir += Vector2.right;
-	        transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
+    void FixedUpdate()
+    {
+        if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
+        {
+            movDir += Vector2.left;
+            transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
         }
-	    else
-	    {
-	        movDir = transform.forward;
-	    }
+        else
+        {
+            movDir = transform.forward;
+        }
 
-        
+        if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
+        {
+            movDir += Vector2.right;
+            transform.Translate(movDir * Speed * Time.deltaTime, Camera.main.transform);
+        }
+        else
+        {
+            movDir = transform.forward;
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
-	    {
-	        rigidbody.AddForce(transform.up * jumpSpeed, ForceMode2D.Impulse );
-	    }
+        {
+            rigidbody.AddForce(Vector2.up * jumpSpeed, ForceMode2D.Impulse);
+        }
+    }
 
+    // Update is called once per frame
+	void Update ()
+	{
 	}
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Environment")
+        {
+            isTouching = true;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Environment")
+        {
+            isTouching = false;
+        }
+    }
 
     public bool IsGrounded()
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1, groundLayer);
-        
-        if (hit.collider != null)
+        RaycastHit2D hit2 = Physics2D.Raycast(new Vector2(transform.position.x - 0.5f, transform.position.y), Vector2.down, 1, groundLayer);
+        RaycastHit2D hit3 = Physics2D.Raycast(new Vector2(transform.position.x + 0.5f, transform.position.y), Vector2.down, 1, groundLayer);
+
+        if (hit.collider != null || hit2.collider != null || hit3.collider != null)
         {
             return true;
         }
